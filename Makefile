@@ -8,3 +8,6 @@ all:
 
 clean:
 	rm figures/* frames/*
+
+avi2png:
+	ffmpeg -i "./avi/visiontraffic.avi" -f image2 "./avi/video-frame%05d.png"

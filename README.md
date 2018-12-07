@@ -14,9 +14,9 @@ fps 帧每秒，视频的效果，在时间上多了一维，每一帧是一个�
 
 # 实验五 - 声音、图像的基本理解和 GMM 背景建模
 
-|学号|姓名|
-|:--:|:--:|
-|1160300625|李一鸣|
+|学号|姓名|日期
+|:--:|:--:|:--:|
+|1160300625|李一鸣|2018 年 11 月 30 日|
 
 - [实验五 - 声音、图像的基本理解和 GMM 背景建模](#%E5%AE%9E%E9%AA%8C%E4%BA%94---%E5%A3%B0%E9%9F%B3%E5%9B%BE%E5%83%8F%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%90%86%E8%A7%A3%E5%92%8C-gmm-%E8%83%8C%E6%99%AF%E5%BB%BA%E6%A8%A1)
     - [信号的傅里叶变换及其幅度、相位](#%E4%BF%A1%E5%8F%B7%E7%9A%84%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2%E5%8F%8A%E5%85%B6%E5%B9%85%E5%BA%A6%E7%9B%B8%E4%BD%8D)
@@ -74,6 +74,9 @@ fps 帧每秒，视频的效果，在时间上多了一维，每一帧是一个�
     - [视频中的高斯背景建模](#%E8%A7%86%E9%A2%91%E4%B8%AD%E7%9A%84%E9%AB%98%E6%96%AF%E8%83%8C%E6%99%AF%E5%BB%BA%E6%A8%A1)
         - [混合高斯模型](#%E6%B7%B7%E5%90%88%E9%AB%98%E6%96%AF%E6%A8%A1%E5%9E%8B)
         - [视频处理](#%E8%A7%86%E9%A2%91%E5%A4%84%E7%90%86)
+        - [生成图片](#%E7%94%9F%E6%88%90%E5%9B%BE%E7%89%87)
+        - [均值聚类](#%E5%9D%87%E5%80%BC%E8%81%9A%E7%B1%BB)
+        - [分离结果](#%E5%88%86%E7%A6%BB%E7%BB%93%E6%9E%9C)
     - [参考文献](#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE)
 
 ## 信号的傅里叶变换及其幅度、相位
@@ -764,6 +767,9 @@ $$
 可以看到自身和自身是相关性最大的。
 
 - 白噪声的自相关函数满足 $R_X(\tau) = \frac{N_0}{2}\delta(\tau)$
+
+    ![noise-transform](https://i1.wp.com/www.gaussianwaves.com/gaussianwaves/wp-content/uploads/2013/11/Wiener-Khinchin-Theorem.png?w=615&ssl=1)
+
 - 功率谱密度均匀分布在 $(-\infty, +\infty)$ 的整个频率区间
 - 应用参见维基百科：
     <blockquote>
@@ -779,8 +785,6 @@ $$
 
     白噪声也可以用于审讯前使人迷惑，并且可能用于感觉剥夺技术的一部分。上市销售的白噪声机器产品有私密性增强器、睡眠辅助器以及掩饰耳鸣。
     </blockquote>
-
-![noise-transform](https://i1.wp.com/www.gaussianwaves.com/gaussianwaves/wp-content/uploads/2013/11/Wiener-Khinchin-Theorem.png?w=615&ssl=1)
 
 ### 图像对齐
 
@@ -819,6 +823,47 @@ $$
 将新的帧分为前景、背景，重复以上操作。
 
 理论上跟水果分类问题是完全一样的，只是需要动态考虑前后的变化而已了。
+
+### 生成图片
+
+安装好 `ffmpeg`，执行 `make avi2png` 将视频转换为图片：
+
+```powershell
+Input #0, avi, from 'visiontraffic.avi':
+  Metadata:
+    encoder         : Lavf52.31.0
+  Duration: 00:00:17.72, start: 0.000000, bitrate: 11475 kb/s
+    Stream #0:0: Video: mjpeg (Baseline) (MJPG / 0x47504A4D), yuvj420p(pc, bt470bg/unknown/unknown), 640x360, 11488 kb/s, 29.97 fps, 29.97 tbr, 29.97 tbn, 29.97 tbc
+Stream mapping:
+  Stream #0:0 -> #0:0 (mjpeg (native) -> png (native))
+Press [q] to stop, [?] for help
+[swscaler @ 00000241926aeb80] deprecated pixel format used, make sure you did set range correctly
+Output #0, image2, to 'video-frame%05d.png':
+  Metadata:
+    encoder         : Lavf58.23.102
+    Stream #0:0: Video: png, rgb24, 640x360, q=2-31, 200 kb/s, 29.97 fps, 29.97 tbn, 29.97 tbc
+    Metadata:
+      encoder         : Lavc58.41.101 png
+frame=  531 fps= 17 q=-0.0 Lsize=N/A time=00:00:17.71 bitrate=N/A speed=0.568x
+video:195496kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: unknown
+```
+
+一共生成了 531 张图片，其中第 1 张和第 150 张分别为：
+
+![./avi/video-frame00001.png](./avi/video-frame00001.png)
+![./avi/video-frame00150.png](./avi/video-frame00150.png)
+
+### 均值聚类
+
+使用 `scipy.cluster.vq.kmeans` 对第一张图片进行均值聚类。
+
+<object data="./png_diff/png_diff.txt" width="500"></object>
+
+### 分离结果
+
+利用第 1 张图片计算出的中心点，对第 150 张图片进行前背景分离得到的结果如下：
+
+![png_diff.svg](./figures/png-diff.svg)
 
 ## 参考文献
 
