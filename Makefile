@@ -1,6 +1,6 @@
 SOURCE_DIR = ./src
 
-all:
+all: avi2png
 	cd $(SOURCE_DIR) && make all
 
 %:
